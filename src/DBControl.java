@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.math.*;
 
 
 
@@ -67,7 +68,50 @@ public class DBControl {
    //导入用户的用户名、密码。数组[2]
    //导出用户的User_id。若登陆失败，返回0。
    public String DB_Login(String[] Data_Login){
-      return null;
+       //Data_Login[0]-->用户名
+       //Data_Login[1]-->密码
+       int flag=0;//0:未查询到结果，用户名不存在；1：密码错误；2：登陆成功
+       String userid=null;
+
+       try{
+           String driver = "com.mysql.jdbc.Driver";
+           Class.forName(driver);  //加载驱动
+
+           String url="jdbc:mysql://39.105.70.32:3306/stubar";
+           Connection con=DriverManager.getConnection(url,"stubar","123456");
+
+           System.out.println("数据库连接成功!");
+
+           String sql="select passeword,user_id from user where user_name=?";
+           PreparedStatement pre = (PreparedStatement) con.prepareStatement(sql);
+           pre.setString(1, Data_Login[0]);
+
+           System.out.println("构造的sql语句是:"+sql);
+
+           ResultSet rs = pre.executeQuery();
+           if(rs.next()){//查询到密码
+//               s1.equals(s2)
+               if(Data_Login[1].equals(rs.getString(1))){//密码正确，进行后续操作
+                   userid=String.valueOf(rs.getString(2));
+               }
+               else{//密码错误
+                   userid="0";
+               }
+           }
+
+           pre.close();
+           con.close();
+           System.out.println("数据库关闭!!");
+//
+       }catch (SQLException sqlexception){
+           sqlexception.printStackTrace();
+       }
+       catch(Exception e) {
+           // 处理 Class.forName 错误
+           e.printStackTrace();
+       }
+
+       return userid;//null-->用户名不存在；0-->密码错误；userid
    }
 
    //加载主页面。
