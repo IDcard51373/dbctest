@@ -70,7 +70,6 @@ public class DBControl {
    public String DB_Login(String[] Data_Login){
        //Data_Login[0]-->用户名
        //Data_Login[1]-->密码
-       int flag=0;//0:未查询到结果，用户名不存在；1：密码错误；2：登陆成功
        String userid=null;
 
        try{
@@ -117,7 +116,40 @@ public class DBControl {
    //加载主页面。
    //导出所有帖子中最新刷新的5个帖子的Post_id、Title和Content的前50个字符。数组[5][3]
    public String[][] DB_GetMainPage(){
-      return new String[0][];
+       String result[][]=new String[5][3];
+       try{
+           String driver = "com.mysql.jdbc.Driver";
+           Class.forName(driver);  //加载驱动
+
+           String url="jdbc:mysql://39.105.70.32:3306/stubar";
+           Connection con=DriverManager.getConnection(url,"stubar","123456");
+
+           System.out.println("数据库连接成功!");
+
+           String sql="select post_id,tittle,content from post order by time_edit desc limit 5";
+           PreparedStatement pre = (PreparedStatement) con.prepareStatement(sql);
+
+           System.out.println("构造的sql语句是:"+sql);
+
+           ResultSet rs = pre.executeQuery();
+           for (int j = 0; rs.next(); j++) {
+               result[j][0]= rs.getString(1);
+               result[j][1]= rs.getString(2);
+               result[j][2]= rs.getString(3);
+           }
+           pre.close();
+           con.close();
+           System.out.println("数据库关闭!!");
+
+       }catch (SQLException sqlexception){
+           sqlexception.printStackTrace();
+       }
+       catch(Exception e) {
+           // 处理 Class.forName 错误
+           e.printStackTrace();
+       }
+
+      return result;
    }
 
 
