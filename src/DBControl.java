@@ -156,8 +156,42 @@ public class DBControl {
    //加载某板块页面。
    //导入专业板块的名称。
    //导出该板块最近刷新的5个帖子的Post_id、Title和Content的前50个字符。数组[5][3]
-   public  String[][] DB_GetClassPage(){
-      return new String[0][];
+   public  String[][] DB_GetClassPage(String major){
+       String result[][]=new String[5][3];
+       try{
+           String driver = "com.mysql.jdbc.Driver";
+           Class.forName(driver);  //加载驱动
+
+           String url="jdbc:mysql://39.105.70.32:3306/stubar";
+           Connection con=DriverManager.getConnection(url,"stubar","123456");
+
+           System.out.println("数据库连接成功!");
+
+           String sql="select post_id,tittle,content from post where major=? order by time_edit desc limit 5 where major=?";
+           PreparedStatement pre = (PreparedStatement) con.prepareStatement(sql);
+           pre.setString(1, major);
+           System.out.println("构造的sql语句是:"+sql);
+
+           ResultSet rs = pre.executeQuery();
+           for (int j = 0; rs.next(); j++) {
+               result[j][0]= rs.getString(1);
+               result[j][1]= rs.getString(2);
+               result[j][2]= rs.getString(3);
+           }
+           pre.close();
+           con.close();
+           System.out.println("数据库关闭!!");
+
+       }catch (SQLException sqlexception){
+           sqlexception.printStackTrace();
+       }
+       catch(Exception e) {
+           // 处理 Class.forName 错误
+           e.printStackTrace();
+       }
+
+       return result;
+
    }
 
    //加载某帖子。
@@ -178,7 +212,59 @@ public class DBControl {
    //导入用户的User_id
    //导出用户的User_name、Nickname、Gender、Major、Birthday、发布的帖子的总数。数组[6]
    public String[] DB_GetUserInfo(String User_id){
-      return new String[0];
+       String result[]=new  String[6];
+
+       try{
+           String driver = "com.mysql.jdbc.Driver";
+           Class.forName(driver);  //加载驱动
+
+           String url="jdbc:mysql://39.105.70.32:3306/stubar";
+           Connection con=DriverManager.getConnection(url,"stubar","123456");
+
+           System.out.println("数据库连接成功!");
+
+           String sql="select User_name,Nickname,Gender,Major,Birthday from user where user_id=?";
+           PreparedStatement pre = (PreparedStatement) con.prepareStatement(sql);
+           pre.setString(1, User_id);
+
+           System.out.println("构造的sql语句是:"+sql);
+
+           ResultSet rs = pre.executeQuery();
+           if(rs.next()){//查询到此用户
+////               s1.equals(s2)
+//               if(Data_Login[1].equals(rs.getString(1))){//密码正确，进行后续操作
+//                   userid=String.valueOf(rs.getString(2));
+//               }
+//               else{//密码错误
+//                   userid="0";
+//               }
+               for(int i=5;i>0;i--){
+                   result[i-1]=rs.getString(i);
+               }
+               String sql2="SELECT COUNT(post_id) FROM post where user_id=?";
+               PreparedStatement pre2 = (PreparedStatement) con.prepareStatement(sql2);
+               pre2.setString(1, User_id);
+               System.out.println("构造的sql语句是:"+sql2);
+               ResultSet rs2 = pre2.executeQuery();
+               rs2.next();
+               result[5]=rs2.getString(1);
+               System.out.println("result[5]："+result[5]);
+           }
+
+           pre.close();
+           con.close();
+           System.out.println("数据库关闭!!");
+//
+       }catch (SQLException sqlexception){
+           sqlexception.printStackTrace();
+       }
+       catch(Exception e) {
+           // 处理 Class.forName 错误
+           e.printStackTrace();
+       }
+
+
+       return result;
    }
 
    //发布帖子
@@ -192,7 +278,41 @@ public class DBControl {
    //导入用户的User_id、帖子的Post_id、评论的Content。数组[3]
    //导出发布结果
     public Boolean DB_WriteComment(String[] Data_Comment){
-      return null;
+        try {
+            String driver = "com.mysql.jdbc.Driver";
+            Class.forName(driver);  //加载驱动
+
+            String url = "jdbc:mysql://39.105.70.32:3306/stubar";
+            Connection con = DriverManager.getConnection(url, "stubar", "123456");
+            Statement stmt = con.createStatement();
+
+            System.out.println("数据库连接成功!");
+            String sql = "INSERT INTO comment(user_id,post_id,content) VALUES(?,?,?)";
+            PreparedStatement pre = (PreparedStatement) con.prepareStatement(sql);
+//            int userid=
+            System.out.println(Integer.valueOf(Data_Comment[0]).intValue());
+            System.out.println(Integer.valueOf(Data_Comment[1]).intValue());
+            System.out.println(Data_Comment[2]);
+
+            pre.setInt(1,Integer.valueOf(Data_Comment[0]).intValue());
+            pre.setInt(2, Integer.valueOf(Data_Comment[1]).intValue());
+            pre.setString(3, Data_Comment[2]);
+
+            System.out.println("构造的sql语句是:" + sql);
+            int count = pre.executeUpdate();
+
+            System.out.println(count + "条数据发生了变化");
+            pre.close();
+            con.close();
+            System.out.println("数据库关闭!!");
+//
+        } catch (SQLException sqlexception) {
+            sqlexception.printStackTrace();
+        } catch (Exception e) {
+            // 处理 Class.forName 错误
+            e.printStackTrace();
+        }
+        return true;
     }
 
 }
